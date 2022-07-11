@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_prompter/bloc/bloc/auth_bloc.dart';
-import 'package:my_prompter/model/anasayfa.dart';
+import 'package:my_prompter/model/homepage.dart';
 import 'package:my_prompter/model/sign_in.dart';
 import 'package:my_prompter/repository/auth_repository.dart';
 
@@ -47,10 +47,10 @@ class MyApp extends StatelessWidget {
               builder: (context, snapshot) {
                 // Eğer snapshot'ta kullanıcı verileri varsa, bu kişi zaten oturum açmış demektir. Ana sayfaya yönlendiriyor.
                 if (snapshot.hasData) {
-                  return const Anasayfa();
+                  return const Homepage();
                 }
                 // Oturum açma sayfasını gösterir.
-                return const Giris();
+                return const SignIn();
               }),
         ),
       ),

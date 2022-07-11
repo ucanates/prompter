@@ -8,19 +8,23 @@ import 'package:my_prompter/bloc/bloc/auth_bloc.dart';
 import 'package:my_prompter/model/sign_in.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-void main() => runApp(Anasayfa());
+import 'package:my_prompter/model/userinfo.dart';
 
-class Anasayfa extends StatelessWidget {
-  const Anasayfa({Key? key}) : super(key: key);
+void main() => runApp(const Homepage());
+
+class Homepage extends StatelessWidget {
+  const Homepage({Key? key}) : super(key: key);
 
   // Bu widget uygulamanın çalıştığı yer.
   @override
   Widget build(BuildContext context) {
-    return MyHomePage();
+    return const MyHomePage();
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -39,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late DatabaseReference ref;
   //firebase storage için referans
   late Reference storageRef;
+
 //firebase storage'ye kullanıcını mail adresini ekliyor
   void addEmail() {
     storageRef.child("E-mail").putString(
@@ -68,14 +73,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     addEmail();
     addText();
     // kullanıcı id'nin document yerini gösteriyor
+    final userjson = <String, String>{
+      "email": user.email.toString(),
+      "text": msgController.text,
+      "speedFactor": speedFactor.toString(),
+      "scroll": scroll.toString(),
+    };
     DocumentReference docRef = users.doc(user.uid);
     return docRef
-        .set({
-          "email": user.email,
-          "text": msgController.text,
-          "speedFactor": speedFactor,
-          "scroll": scroll,
-        })
+        .set(userjson)
         .then((value) => print("kullanıcı eklendi"))
         .catchError((error) => print("eklenemedi $error"));
   }
@@ -83,13 +89,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 //json olarak realtime databaseden bilgileri alıp,
 //uygulamanın içindeki değişkenleri güncelliyor
   void updateRef(Map value) {
-    speedFactor = value["Speed"];
-    msgController.text = value["Text"];
-    //setState(() {
-    scroll = value["Start"];
-    //});
-    //database de anlık kaydırma ne ise aynısı yapsın diye
-    _toggleScrolling();
+    if (mounted) {
+      speedFactor = value["Speed"];
+      msgController.text = value["Text"];
+
+      setState(() {
+        scroll = value["Start"];
+      });
+      //database de anlık kaydırma ne ise aynısı yapsın diye
+      _toggleScrolling();
+    }
   }
 
 //database'e yeni hızı yazıyor
@@ -100,6 +109,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 //database'e hareket durumunu yazıyor
   void startUpdate() async {
     await ref.update({"Start": scroll});
+  }
+
+  @override
+  //controllerleri siliyor
+  void dispose() {
+    _scrollController.dispose();
+    msgController.dispose();
+    super.dispose();
   }
 
   @override
@@ -122,6 +139,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.initState();
   }
 
+  void uploadJson() {
+    final body = {
+      "Email": user.email,
+      "Text": msgController.text,
+      "Speed": speedFactor,
+      "Start": scroll
+    };
+  }
+
   //ekrandaki pixelleri ve girilen metnin uzunluğunu kullanarak,
   // kaydırma zamanı oluşturup o kadar sürede aşağıya inmesini başaltıyor
   _scroll() {
@@ -140,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       _scroll();
     } else {
       _scrollController.animateTo(_scrollController.offset,
-          duration: Duration(seconds: 1), curve: Curves.linear);
+          duration: const Duration(seconds: 1), curve: Curves.linear);
     }
   }
 
@@ -168,13 +194,27 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Metin"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(
+              Icons.accessibility,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => UserInformation()),
+                (route) => false,
+              );
+            },
+          )
+        ],
       ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is UnAuthenticated) {
             // Kullanıcı oturumu kapattığında oturum açma ekranına gider.
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => Giris()),
+              MaterialPageRoute(builder: (context) => SignIn()),
               (route) => false,
             );
           }
@@ -198,7 +238,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             child: TextField(
               controller: msgController,
               cursorHeight: 10,
-              style: TextStyle(),
+              style: const TextStyle(),
               decoration: const InputDecoration(labelText: "Buraya Giriniz"),
               readOnly: false,
               maxLines: 1000,
@@ -207,6 +247,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ),
         ),
       ),
+
       //uygulumayı kontrol etmesi için gerekli butonlar
       bottomNavigationBar: BottomAppBar(
           child: Row(
@@ -217,15 +258,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               onPressed: (() {
                 database();
                 addUser();
+                //createUser();
               }),
               icon: const Icon(Icons.save)),
           //metnin kaymasını başlatıyor, durduruyor ve aynı zamanda
           // databaseden scroll değişkenini güncelliyor
           IconButton(
               onPressed: (() {
-                //setState(() {
-                scroll = !scroll;
-                //});
+                setState(() {
+                  scroll = !scroll;
+                });
                 _toggleScrolling();
                 startUpdate();
               }),

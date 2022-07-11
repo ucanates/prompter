@@ -2,18 +2,18 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_prompter/bloc/bloc/auth_bloc.dart';
-import 'package:my_prompter/model/anasayfa.dart';
+import 'package:my_prompter/model/homepage.dart';
 
 import 'package:my_prompter/model/sign_up.dart';
 
-class Giris extends StatefulWidget {
-  const Giris({Key? key}) : super(key: key);
+class SignIn extends StatefulWidget {
+  const SignIn({Key? key}) : super(key: key);
 
   @override
-  State<Giris> createState() => _SignInState();
+  State<SignIn> createState() => _SignInState();
 }
 
-class _SignInState extends State<Giris> {
+class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -45,7 +45,7 @@ class _SignInState extends State<Giris> {
           if (state is Authenticated) {
             // Kullanıcının kimliği doğrulanmışsa anasayfaya yönlendirir.
             Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => const Anasayfa()));
+                MaterialPageRoute(builder: (context) => const Homepage()));
           }
           if (state is AuthError) {
             // Kullanıcı geçersiz kimlik bilgileri girdiyse hata mesajı gösteriliyor.

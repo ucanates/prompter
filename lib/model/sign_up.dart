@@ -2,7 +2,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_prompter/bloc/bloc/auth_bloc.dart';
-import 'package:my_prompter/model/anasayfa.dart';
+import 'package:my_prompter/model/homepage.dart';
 import 'package:my_prompter/model/sign_in.dart';
 
 class SignUp extends StatefulWidget {
@@ -45,7 +45,7 @@ class _SignUpState extends State<SignUp> {
             // Kullanıcının kimliği doğrulanmışsa anasayfaya  yönlendiriyor
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const Anasayfa(),
+                builder: (context) => const Homepage(),
               ),
             );
           }
@@ -147,7 +147,7 @@ class _SignUpState extends State<SignUp> {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Giris()),
+                                builder: (context) => const SignIn()),
                           );
                         },
                         child: const Text("Giriş Yap"),
