@@ -15,29 +15,29 @@ class UserInformation extends StatefulWidget {
 class _UserInformationState extends State<UserInformation> {
   final user = FirebaseAuth.instance.currentUser!;
   late Future<Theuser> theuser;
-  Future<Theuser> callApi() async {
-    // kullanıcının tokenini alıyor
-    final idToken = await user.getIdToken();
+  Future<String> callApi() async {
     //http'ye get isteğini yolluyor kullanıcının tokeniyle giriş yapıyor
     final response = await http.get(
-      Uri.parse(
-          "https://firestore.googleapis.com/v1/projects/myprompter-43d22/databases/(default)/documents/users/${user.uid}"),
+      Uri.parse("https://www.googleapis.com/blogger/v3/blogs/2399953"),
       headers: {
-        "authorization": 'Bearer $idToken',
+        "authorization":
+            'Bearer ya29.A0AVA9y1s2OgMUrlh8Zrd-lwM_IujDzlxec_-HfKfILR99B0gh5lfoCnPv0fE3Wp70H2QFpOUYqEL4doijO6EyAl_InlxT4LqUmYZeSUBERQRcac1yOgEYOF3T5kPxun24sUebPN3LOiSJAYl-BPwFw3Ji-dqhYUNnWUtBVEFTQVRBU0ZRRTY1ZHI4MzJGNXE2MEc3azZKMjU2LU9uUGlaQQ0163',
       },
     );
     if (response.statusCode == 200) {
       // Sunucu 200 OK yanıtı verdiyse,JSON'u parçalıyor.Fields kısmının içindekileri alıyor
       //ve Theuser'ın içindeki metoda map olarak yolluyor
-      return Theuser.fromJson(jsonDecode(response.body)["fields"]);
+
+      return response.body;
     } else {
       throw Exception('Failed to load');
     }
   }
 
+  late Future<String> s;
   @override
   void initState() {
-    theuser = callApi();
+    s = callApi();
     super.initState();
   }
 
@@ -50,8 +50,8 @@ class _UserInformationState extends State<UserInformation> {
                   MaterialPageRoute(builder: (context) => const Homepage()));
             }),
             icon: const Icon(Icons.arrow_back)),
-        body: FutureBuilder<Theuser>(
-          future: theuser,
+        body: FutureBuilder<String>(
+          future: s,
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
@@ -62,8 +62,8 @@ class _UserInformationState extends State<UserInformation> {
                 } else {
                   return Center(
                       child: Text(
-                    'Email: ${snapshot.data!.email}\n Is Scrolling: ${snapshot.data!.scroll}\n Scrolling Speed: ${snapshot.data!.speedFactor}',
-                    style: const TextStyle(fontSize: 25, height: 2),
+                    snapshot.data.toString(),
+                    //style: const TextStyle(fontSize: 25, height: 2),
                   ));
                 }
             }
